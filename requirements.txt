@@ -1,0 +1,5 @@
+opencv-python==4.4.0.46
+scikit-image==0.17.2
+torch==1.7.1
+torchvision==0.8.2
+pytesseract==0.3.6
