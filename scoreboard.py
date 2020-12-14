@@ -5,6 +5,7 @@ import pytesseract
 import os
 import re
 import csv
+import gspread
 import pprint
 from absl import app
 from absl import flags
@@ -17,6 +18,7 @@ flags.DEFINE_string('service_account', None,
                     'Google service account file path')
 flags.DEFINE_boolean('remove_screenshots', False,
                      'Delete screenshots after processing')
+
 
 def GetImages(path):
   file_list = []
@@ -103,13 +105,8 @@ def FindSongInfo(score_dict):
   return score_dict
 
 
-def CheckCsv(csv_path):
-  csv_exists = os.path.isfile(csv_path)
-
-  return csv_exists
-
-
 def HandleCsv(csv_exists, csv_path, final_score_dict):
+  csv_exists = os.path.isfile(csv_path)
   write_mode = 'a' if csv_exists else 'w'
   with open(csv_path, write_mode) as writer:
     csvwriter = csv.writer(writer)
@@ -120,7 +117,7 @@ def HandleCsv(csv_exists, csv_path, final_score_dict):
       difficulty = score_details[3]
       accuracy = score_details[4]
       score_date = score_details[5]
-      csvwriter.writerow([title, score, stars, difficulty,
+      csvwriter.writerow([title, score, difficulty, stars,
                           accuracy, score_date])
 
 
@@ -131,18 +128,29 @@ def DeleteImages(path):
      os.remove(file_path)
 
 
+def GoogleSheetHandler(sheet_id, final_score_dict):
+  gc = gspread.service_account()
+  sh = gc.open(sheet_id)
+  print(sh.sheet1.get('A1'))
+  
+  
 def main(argv):
   del argv
+  
   file_list = GetImages(FLAGS.img_dir)
   score_dict = ProcessImages(file_list)
   updated_score_dict = FindScores(score_dict)
   final_score_dict = FindSongInfo(updated_score_dict)
   pprint.pprint(final_score_dict)
+  
   if FLAGS.csv:
-    csv_exists = CheckCsv(FLAGS.csv)
     HandleCsv(csv_exists, FLAGS.csv, final_score_dict)
+    
   if FLAGS.remove_screenshots:
     DeleteImages(FLAGS.img_dir)
+    
+  if FLAGS.google_sheet:
+    GoogleSheetHandler(FLAGS.google_sheet, final_score_dict)
 
 if __name__ == '__main__':
   app.run(main)
