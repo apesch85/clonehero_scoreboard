@@ -88,7 +88,6 @@ def FindSongInfo(score_dict):
   for file_path in score_dict.keys():
     if file_path.endswith('.png'):
       title = file_path.split('/')[-1][:-19][10:].replace('-', ' ').strip()
-      print(title)
       score = score_dict[file_path][1].strip('\'')
       stars = score_dict[file_path][2].strip('\'')
       accuracy = score_dict[file_path][3].strip('\'')
@@ -104,21 +103,27 @@ def FindSongInfo(score_dict):
   return score_dict
 
 
-def HandleCsv(csv_exists, csv_path, final_score_dict):
+def HandleCsv(csv_path, final_score_dict):
   csv_exists = os.path.isfile(csv_path)
-  write_mode = 'a' if csv_exists else 'w'
-  with open(csv_path, write_mode) as writer:
-    csvwriter = csv.writer(writer)
-    for score_details in final_score_dict.values():
-      title = score_details[0]
-      score = score_details[1]
-      stars = score_details[2]
-      difficulty = score_details[3]
-      accuracy = score_details[4]
-      score_date = score_details[5]
-      csvwriter.writerow([title, score, difficulty, stars,
-                          accuracy, score_date])
+  if csv_exists:
+    with open(csv_path, 'r') as read_scores:
+      csv_reader = csv.reader(read_scores)
+      existing_scores = list(csv_reader)
+    compared_scores = ScoreComparer(final_score_dict, existing_scores, 'csv')
+    final_score_dict = compared_scores
 
+  if final_score_dict:
+    with open(csv_path, 'w') as writer:
+      csvwriter = csv.writer(writer)
+      for score_details in final_score_dict.values():
+        title = score_details[0]
+        score = score_details[1]
+        stars = score_details[2]
+        difficulty = score_details[3]
+        accuracy = score_details[4]
+        score_date = score_details[5]
+        csvwriter.writerow([title, score, difficulty, stars,
+                            accuracy, score_date])
 
 def DeleteImages(path):
   for filename in os.listdir(path):
@@ -146,8 +151,8 @@ def GoogleSheetHandler(sheet_id, final_score_dict):
     print('Existing scores found! We need to check them first to make sure '
           'we track the highest scores for songs played.')
     existing_scores = worksheet.get_all_values()[1:]
-    print(existing_scores)
-    compared_scores = ScoreComparer(final_score_dict, existing_scores)
+    compared_scores = ScoreComparer(final_score_dict, existing_scores,
+                      'google_sheet')
     for file_path, score_details in compared_scores.items():
       cell = worksheet.find(score_details[0])
       if cell:
@@ -165,7 +170,7 @@ def GoogleSheetHandler(sheet_id, final_score_dict):
       row += 1
 
 
-def ScoreComparer(new_scores, existing_scores):
+def ScoreComparer(new_scores, existing_scores, output_type):
   new_score_list = new_scores.values()
   flattened_scores = [item for sublist in new_score_list for item in sublist]
   best_scores = {}
@@ -187,10 +192,11 @@ def ScoreComparer(new_scores, existing_scores):
           new_scores[file_path] = [title, best_score, difficulty, stars,
                                    accuracy, date]
     elif best_score <= score:
-      print('New score not better than existing score. Deleting new score...')
+      print('New score not better than existing score for song: %s' % title)
       for file_path, song in new_scores.items():
         if song[0] == title:
-          to_delete.append(file_path)
+          if output_type == 'google_sheet':
+            to_delete.append(file_path)
 
   for file_path in to_delete:
     del new_scores[file_path]
@@ -205,7 +211,6 @@ def main(argv):
   score_dict = ProcessImages(file_list)
   updated_score_dict = FindScores(score_dict)
   final_score_dict = FindSongInfo(updated_score_dict)
-  print(final_score_dict)
 
   if FLAGS.csv:
     HandleCsv(FLAGS.csv, final_score_dict)
