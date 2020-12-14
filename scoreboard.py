@@ -154,7 +154,11 @@ def GoogleSheetHandler(sheet_id, final_score_dict):
     compared_scores = ScoreComparer(final_score_dict, existing_scores,
                       'google_sheet')
     for file_path, score_details in compared_scores.items():
-      cell = worksheet.find(score_details[0])
+      try:
+        cell = worksheet.find(score_details[0])
+      except gspread.exceptions.CellNotFound:
+        print('New song: %s found! Adding to tracker...' % score_details[0])
+        cell = False
       if cell:
         worksheet.update('%s%s:%s%s' % (cols[0], cell.row,
                                         cols[len(cols) -1], cell.row),
@@ -181,7 +185,7 @@ def ScoreComparer(new_scores, existing_scores, output_type):
     if title in flattened_scores:
       best_score = max(score,
                    int(flattened_scores[flattened_scores.index(title) + 1]))
-    if best_score != score:
+    if best_score > score:
       print('New high score found for: %s | Score: %s' % (title, best_score))
       difficulty = flattened_scores[flattened_scores.index(title) + 2]
       stars = flattened_scores[flattened_scores.index(title) + 3]
