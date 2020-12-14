@@ -85,8 +85,7 @@ def FindScores(score_dict):
 def FindSongInfo(score_dict):
     for file_path in score_dict.keys():
         if file_path.endswith('.png'):
-            title = file_path.split('/')[-1][:-19][10:].replace('-', 
-                                                                ' ').strip()
+            title = file_path.split('/')[-1][:-19][10:].replace('-', ' ').strip()
             score = score_dict[file_path][1].strip('\'')
             stars = score_dict[file_path][2].strip('\'')
             accuracy = score_dict[file_path][3].strip('\'')
