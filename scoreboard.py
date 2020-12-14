@@ -99,7 +99,7 @@ def FindSongInfo(score_dict):
             score_dict[file_path] = [title, score, difficulty, stars, accuracy,
                                      score_date]
 
-  return score_dict
+    return score_dict
 
 
 def HandleCsv(csv_path, final_score_dict):
