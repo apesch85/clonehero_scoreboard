@@ -6,7 +6,6 @@ import os
 import re
 import csv
 import gspread
-import pprint
 from absl import app
 from absl import flags
 
@@ -90,16 +89,16 @@ def FindSongInfo(score_dict):
     if file_path.endswith('.png'):
       title = file_path.split('/')[-1][:-19][10:].replace('-', ' ').strip()
       print(title)
-      score = score_dict[file_path][1]
-      stars = score_dict[file_path][2]
-      accuracy = score_dict[file_path][3]
-      difficulty = score_dict[file_path][4]
+      score = score_dict[file_path][1].strip('\'')
+      stars = score_dict[file_path][2].strip('\'')
+      accuracy = score_dict[file_path][3].strip('\'')
+      difficulty = score_dict[file_path][4].strip('\'')
       score_year = file_path.split('/')[-1][-18:][:-4][:4]
       score_month = file_path.split('/')[-1][-18:][:-4][4:][:2]
       score_day = file_path.split('/')[-1][-18:][:-4][6:][:2]
       score_date = '%s-%s-%s' % (score_year, score_month, score_day)
-
-      score_dict[file_path] = [title, score, stars, difficulty, accuracy,
+      score_date = score_date.strip('\'')
+      score_dict[file_path] = [title, score, difficulty, stars, accuracy,
                                score_date]
 
   return score_dict
@@ -131,26 +130,92 @@ def DeleteImages(path):
 def GoogleSheetHandler(sheet_id, final_score_dict):
   gc = gspread.service_account()
   sh = gc.open(sheet_id)
-  print(sh.sheet1.get('A1'))
-  
-  
+  worksheet = sh.sheet1
+  status_check = worksheet.col_values(1)
+  to_delete = []
+  row = 2
+  cols = ['A', 'B', 'C', 'D', 'E', 'F']
+  if len(status_check) == 1:
+    for score_details in final_score_dict.values():
+      worksheet.update('%s%s:%s%s' % (cols[0], row,
+                                      cols[len(cols)-1], row),
+                                      [score_details])
+      row += 1
+  elif len(status_check) > 1:
+    row = len(status_check) + 1
+    print('Existing scores found! We need to check them first to make sure '
+          'we track the highest scores for songs played.')
+    existing_scores = worksheet.get_all_values()[1:]
+    print(existing_scores)
+    compared_scores = ScoreComparer(final_score_dict, existing_scores)
+    for file_path, score_details in compared_scores.items():
+      cell = worksheet.find(score_details[0])
+      if cell:
+        worksheet.update('%s%s:%s%s' % (cols[0], cell.row,
+                                        cols[len(cols) -1], cell.row),
+                                        [score_details])
+        to_delete.append(file_path)
+    for file_path in to_delete:
+      del compared_scores[file_path]
+
+    for score_details in compared_scores.values():
+      worksheet.update('%s%s:%s%s' % (cols[0], row,
+                                      cols[len(cols)-1], row),
+                                      [score_details])
+      row += 1
+
+
+def ScoreComparer(new_scores, existing_scores):
+  new_score_list = new_scores.values()
+  flattened_scores = [item for sublist in new_score_list for item in sublist]
+  best_scores = {}
+  to_delete = []
+  for song in existing_scores:
+    title = song[0]
+    score = int(song[1])
+    if title in flattened_scores:
+      best_score = max(score,
+                   int(flattened_scores[flattened_scores.index(title) + 1]))
+    if best_score != score:
+      print('New high score found for: %s | Score: %s' % (title, best_score))
+      difficulty = flattened_scores[flattened_scores.index(title) + 2]
+      stars = flattened_scores[flattened_scores.index(title) + 3]
+      accuracy = flattened_scores[flattened_scores.index(title) + 4]
+      date = flattened_scores[flattened_scores.index(title) + 5]
+      for file_path, song in new_scores.items():
+        if song[0] == title:
+          new_scores[file_path] = [title, best_score, difficulty, stars,
+                                   accuracy, date]
+    elif best_score <= score:
+      print('New score not better than existing score. Deleting new score...')
+      for file_path, song in new_scores.items():
+        if song[0] == title:
+          to_delete.append(file_path)
+
+  for file_path in to_delete:
+    del new_scores[file_path]
+
+  return new_scores
+
+
 def main(argv):
   del argv
-  
+
   file_list = GetImages(FLAGS.img_dir)
   score_dict = ProcessImages(file_list)
   updated_score_dict = FindScores(score_dict)
   final_score_dict = FindSongInfo(updated_score_dict)
-  pprint.pprint(final_score_dict)
-  
+  print(final_score_dict)
+
   if FLAGS.csv:
-    HandleCsv(csv_exists, FLAGS.csv, final_score_dict)
-    
+    HandleCsv(FLAGS.csv, final_score_dict)
+
   if FLAGS.remove_screenshots:
     DeleteImages(FLAGS.img_dir)
-    
+
   if FLAGS.google_sheet:
     GoogleSheetHandler(FLAGS.google_sheet, final_score_dict)
+
 
 if __name__ == '__main__':
   app.run(main)
