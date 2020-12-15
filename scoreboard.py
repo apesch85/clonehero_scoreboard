@@ -1,5 +1,4 @@
-
-m PIL import Image
+from PIL import Image
 import pytesseract
 import os
 import re
