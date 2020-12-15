@@ -1,5 +1,4 @@
-
-m PIL import Image
+from PIL import Image
 import pytesseract
 import os
 import re
@@ -50,6 +49,7 @@ def FindScores(score_dict):
   stars = ''
   accuracy = ''
   difficulty = ''
+  to_delete = []
 
   for file_path, score_list in score_dict.items():
     score_board = score_list[0]
@@ -79,6 +79,12 @@ def FindScores(score_dict):
       score_dict[file_path].append(stars)
       score_dict[file_path].append(accuracy)
       score_dict[file_path].append(difficulty)
+    else:
+      print('Song: %s doesn\'t have good data. Removing...' % file_path)
+      to_delete.append(file_path)
+
+  for file_path in to_delete:
+    del score_dict[file_path]
 
   return score_dict
 
@@ -184,6 +190,8 @@ def ScoreComparer(new_scores, existing_scores, output_type):
     if title in flattened_scores:
       best_score = max(score,
                    int(flattened_scores[flattened_scores.index(title) + 1]))
+    else:
+      best_score = score
     if best_score > score:
       print('New high score found for: %s | Score: %s' % (title, best_score))
       difficulty = flattened_scores[flattened_scores.index(title) + 2]
@@ -196,8 +204,8 @@ def ScoreComparer(new_scores, existing_scores, output_type):
                                    accuracy, date]
     elif best_score <= score:
       print('New score not better than existing score for song: %s' % title)
-      for file_path, song in new_scores.items():
-        if song[0] == title:
+      for file_path, new_song in new_scores.items():
+        if new_song[0] == title:
           if output_type == 'google_sheet':
             to_delete.append(file_path)
 
