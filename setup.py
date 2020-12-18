@@ -7,26 +7,26 @@ setup(
    author='apesch85',
    packages=['clonehero_scoreboard'],
    install_requires=[
-     cycler
-     decorator
-     future
-     imageio
-     kiwisolver
-     matplotlib
-     networkx
-     numpy
-     opencv-python
-     Pillow
-     pkg-resources
-     pyparsing
-     pytesseract
-     python-dateutil
-     PyWavelets
-     scikit-image
-     scipy
-     six
-     torch
-     torchvision
-     absl-py
+     'cycler',
+     'decorator',
+     'future',
+     'imageio',
+     'kiwisolver',
+     'matplotlib',
+     'networkx',
+     'numpy',
+     'opencv-python',
+     'Pillow',
+     'pkg-resources',
+     'pyparsing',
+     'pytesseract',
+     'python-dateutil',
+     'PyWavelets',
+     'scikit-image',
+     'scipy',
+     'six',
+     'torch',
+     'torchvision',
+     'absl-py'
    ]
 )
