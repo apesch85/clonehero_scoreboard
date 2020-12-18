@@ -1,7 +1,7 @@
 import re
 import os
 
-def FindScores(score_dict):
+def FindScores(score_dict, remove_captured):
   scores = []
   broken_boards = []
   stars = ''
@@ -42,7 +42,7 @@ def FindScores(score_dict):
       difficulty = match_difficulty.group(2).lower()
 
     if len(score_dict[file_path]) > 1:
-      if FLAGS.remove_captured:
+      if remove_captured:
         os.remove('%s_bw.png' % file_path[:-4])
         os.remove(file_path)
       score_dict[file_path].append(stars)

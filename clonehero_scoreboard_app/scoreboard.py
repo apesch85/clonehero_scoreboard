@@ -3,6 +3,7 @@ import pytesseract
 import os
 from score_logic import FindScores
 import google_handler
+import csv_handler
 from absl import app
 from absl import flags
 
@@ -12,8 +13,8 @@ flags.DEFINE_string('csv', None, 'The CSV file path')
 flags.DEFINE_string('google_sheet', None, 'The ID of the Google sheet')
 flags.DEFINE_string('service_account', None,
                     'Google service account file path')
-flags.DEFINE_boolean('remove_screenshots', False,
-                     'Delete screenshots after processing')
+flags.DEFINE_boolean('remove_all_screenshots', False,
+                     'Delete all screenshots after processing')
 flags.DEFINE_boolean('remove_captured', False,
                      'Delete only screenshots that were successfully processed')
 
@@ -71,24 +72,20 @@ def DeleteImages(path):
      file_path = os.path.join(path, filename)
      os.remove(file_path)
 
-  return new_scores
-
 
 def main(argv):
   del argv
 
-  img_dir = FLAGS.img_dir
-
-  file_list = GetImages(img_dir)
+  file_list = GetImages(FLAGS.img_dir)
   score_dict = ProcessImages(file_list)
-  updated_score_dict = FindScores(score_dict)
+  updated_score_dict = FindScores(score_dict, FLAGS.remove_captured)
   final_score_dict = FindSongInfo(updated_score_dict)
 
   if FLAGS.csv:
     HandleCsv(FLAGS.csv, final_score_dict)
 
-  if FLAGS.remove_screenshots:
-    DeleteImages(img_dir)
+  if FLAGS.remove_all_screenshots:
+    DeleteImages(FLAGS.img_dir)
 
   if FLAGS.google_sheet:
     google_handler.GoogleSheetHandler(FLAGS.google_sheet, final_score_dict)
