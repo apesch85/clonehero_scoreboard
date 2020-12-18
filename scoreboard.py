@@ -15,14 +15,18 @@ flags.DEFINE_string('service_account', None,
                     'Google service account file path')
 flags.DEFINE_boolean('remove_screenshots', False,
                      'Delete screenshots after processing')
+flags.DEFINE_boolean('remove_captured', False,
+                     'Delete only screenshots that were successfully processed')
 
 
 def GetImages(path):
   file_list = []
   for filename in os.listdir(path):
     if filename.endswith('.png'):
-      file_path = os.path.join(path, filename)
-      file_list.append(file_path)
+      bw_file = '%s_bw.png' % filename[:-4]
+      if not os.path.isfile(bw_file):
+        file_path = os.path.join(path, filename)
+        file_list.append(file_path)
 
   return file_list
 
@@ -35,8 +39,8 @@ def ProcessImages(files):
     img = Image.open(file_path)
     gray = img.convert('L')
     bw = gray.point(lambda x: 255 if x<100 else 0, '1')
-    #bw_path = '%s_bw.png' % file_path[:-4]
-    #bw.save(bw_path)
+    bw_path = '%s_bw.png' % file_path[:-4]
+    bw.save(bw_path)
     score_board = pytesseract.image_to_string(bw)
     score_dict[file_path] = [score_board]
 
@@ -49,6 +53,7 @@ def FindScores(score_dict):
   stars = ''
   accuracy = ''
   difficulty = ''
+  difficulty_list = ['Easy', 'Medium', 'Hard', 'Expert']
   to_delete = []
 
   for file_path, score_list in score_dict.items():
@@ -67,20 +72,32 @@ def FindScores(score_dict):
       score = match_score.group(0).split(' ')[1]
       score_dict[file_path].append(score)
     else:
-      broken_boards.append(score_board)
+      board_list = score_board.splitlines()
+      for difficulty in difficulty_list:
+        try:
+          score = board_list[board_list.index(difficulty) + 1].replace(',', '')
+          if score.isdigit():
+            score_dict[file_path].append(score)
+        except ValueError:
+          print('Difficulty: %s not found...' % difficulty)
     if match_stars:
       stars = match_stars.group(0).split(' ')[1]
     if match_accuracy:
       accuracy = match_accuracy.group(2)
     if match_difficulty:
-      difficulty = match_difficulty.group(2)
+      difficulty = match_difficulty.group(2).lower()
 
-    if match_num or match_score:
+    if len(score_dict[file_path]) > 1:
+      if FLAGS.remove_captured:
+        os.remove('%s_bw.png' % file_path[:-4])
+        os.remove(file_path)
       score_dict[file_path].append(stars)
       score_dict[file_path].append(accuracy)
       score_dict[file_path].append(difficulty)
     else:
-      print('Song: %s doesn\'t have good data. Removing...' % file_path)
+      print(score_board.splitlines())
+      print('Song: %s doesn\'t have good data. Removing from files to '
+            'process...' % file_path)
       to_delete.append(file_path)
 
   for file_path in to_delete:
@@ -129,6 +146,7 @@ def HandleCsv(csv_path, final_score_dict):
         score_date = score_details[5]
         csvwriter.writerow([title, score, difficulty, stars,
                             accuracy, score_date])
+
 
 def DeleteImages(path):
   for filename in os.listdir(path):
