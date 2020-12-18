@@ -1,3 +1,5 @@
+#! /usr/bin/python3
+
 from setuptools import setup
 
 setup(
@@ -5,28 +7,24 @@ setup(
    version='0.5',
    description='A tool for tracking Clonehero scores',
    author='apesch85',
-   packages=['clonehero_scoreboard'],
+   packages=['clonehero_scoreboard_app'],
    install_requires=[
      'cycler',
      'decorator',
      'future',
+     'gspread==3.6.0',
      'imageio',
-     'kiwisolver',
-     'matplotlib',
+     'kiwisolver==1.1.0',
+     'matplotlib==3.0.3',
      'networkx',
-     'numpy',
-     'opencv-python',
-     'Pillow',
+     'numpy==1.18.5',
+     'Pillow==7.2.0',
      'pkg-resources',
      'pyparsing',
-     'pytesseract',
+     'pytesseract==0.3.6',
      'python-dateutil',
      'PyWavelets',
-     'scikit-image',
-     'scipy',
      'six',
-     'torch',
-     'torchvision',
      'absl-py'
    ]
 )

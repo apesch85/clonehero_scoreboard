@@ -1,0 +1,9 @@
+README.md
+setup.py
+clonehero_scoreboard.egg-info/PKG-INFO
+clonehero_scoreboard.egg-info/SOURCES.txt
+clonehero_scoreboard.egg-info/dependency_links.txt
+clonehero_scoreboard.egg-info/requires.txt
+clonehero_scoreboard.egg-info/top_level.txt
+clonehero_scoreboard_app/__init__.py
+clonehero_scoreboard_app/scoreboard.py
