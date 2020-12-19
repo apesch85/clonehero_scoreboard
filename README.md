@@ -17,7 +17,10 @@ CloneHero Scoreboard uses OCR to lift the text off of your screenshots, organize
 ## How it works
 When the script runs, it does the following -
 1. Check the screenshot folder provided by the `--img_dir` flag for new `.png` images.
-2. Convert each image to black and white, and increase contrast to make text stand out more.
+2. Make text stand out more.
+   1. Remove yellow and blue color channels.
+   2. Increase contrast.
+   3. Convert each image to black and white.
    ![clonehero_image_1](/test_images/clonehero.png)
    ![clone_hero_bw_1](/test_images/clonehero_bw.png)
 3. Try lifting the text off of the black/white image. Check 3 different ways, and do nothing if no score can be found / determined.
