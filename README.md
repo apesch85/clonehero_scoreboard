@@ -20,7 +20,7 @@ When the script runs, it does the following -
 2. Convert each image to black and white, and increase contrast to make text stand out more.
    ![clonehero_image_1](/test_images/clonehero.png)
    ![clone_hero_bw_1](/test_images/clonehero_bw.png)
-3. Try lifting the text off of the black/white image. Check 3 different ways, and return nothing if no score can be found.
+3. Try lifting the text off of the black/white image. Check 3 different ways, and do nothing if no score can be found / determined.
 4. If the score is found, try to get other stats as well.
 5. Check if there is an existing score for the song.
 6. If there is an existing song, compare the scores to make sure the new score is better.
