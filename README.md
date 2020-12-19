@@ -12,7 +12,7 @@ While lots of tools help you understand your performance while you're playing, t
 
 ## The solution
 
-CloneHero Scoreboard uses OCR to lift the text off of your screenshots, organizes them for you, and can export them to a CSV and/or a Google Sheet! 
+CloneHero Scoreboard uses OCR to lift the text off of your screenshots, organizes your scores and stats for you, and can export them to a CSV and/or a Google Sheet! 
 
 ## How it works
 When the script runs, it does the following -
