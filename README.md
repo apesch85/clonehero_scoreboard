@@ -45,3 +45,14 @@ The script can also be added to a crontab or scheduled task to run every so ofte
 * [Linux Crontab](https://opensource.com/article/17/11/how-use-cron-linux)
 * [Windows Scheduler](https://datatofish.com/python-script-windows-scheduler/)
 
+## FAQ
+
+* Q: Why didn't CHS export my score(s)?
+* A: It probably couldn't find your score in the screenshot. The script attempts 3 different ways of lifting the score off the image. If it fails to get the score all 3 times, it will skip the song entirely.
+---
+* Q: Will you fix *foo* issue? 
+* A: Maybe if you ask nicely? ;)
+---
+* Q: Will you implement *foo* feature?
+* A: Maybe if you ask nicely and send cookies?
+
