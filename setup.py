@@ -1,8 +1,14 @@
 #! /usr/bin/python3
 
 from setuptools import setup
+from setuptools import dist
+dist.Distribution().fetch_build_eggs(['Cython', 'numpy>=1.18.5'])
 
 setup(
+    setup_requires=[
+      # Setuptools 18.0 properly handles Cython extensions.
+      'cython',
+    ],
    name='clonehero_scoreboard',
    version='0.5',
    description='A tool for tracking Clonehero scores',
@@ -15,10 +21,9 @@ setup(
      'gspread==3.6.0',
      'imageio',
      'kiwisolver==1.1.0',
-     'matplotlib==3.0.3',
+     'matplotlib',
      'networkx',
-     'numpy==1.18.5',
-     'Pillow==7.2.0',
+     'Pillow>=8.0'
      'pkg-resources',
      'pyparsing',
      'pytesseract==0.3.6',
