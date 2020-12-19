@@ -22,11 +22,9 @@ flags.DEFINE_boolean('remove_captured', False,
 def GetImages(path):
   file_list = []
   for filename in os.listdir(path):
-    if filename.endswith('.png'):
-      bw_file = '%s_bw.png' % filename[:-4]
-      if not os.path.isfile(bw_file):
-        file_path = os.path.join(path, filename)
-        file_list.append(file_path)
+    if not filename.endswith('bw.png'):
+      file_path = os.path.join(path, filename)
+      file_list.append(file_path)
 
   return file_list
 
@@ -37,12 +35,16 @@ def ProcessImages(files):
 
   for file_path in files:
     img = Image.open(file_path)
-    gray = img.convert('L')
-    bw = gray.point(lambda x: 255 if x<100 else 0, '1')
-    bw_path = '%s_bw.png' % file_path[:-4]
-    bw.save(bw_path)
+    matrix = ( 1, 0, 0, 0,
+               0, 0, 0, 0,
+               0, 0, 0, 0 )
+    rgb = img.convert("RGB")
+    converted = rgb.convert("RGB", matrix).convert('L')
+    bw = converted.point(lambda x: x > threshold and 255)
+    conv_path = '%s_bw.png' % file_path[:-4]
+    bw.save(conv_path)
     score_board = pytesseract.image_to_string(bw)
-    score_dict[file_path] = [score_board]
+    processed_images[file_path] = [score_board]
 
   return score_dict
 
