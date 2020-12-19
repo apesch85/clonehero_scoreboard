@@ -82,7 +82,7 @@ def main(argv):
   final_score_dict = FindSongInfo(updated_score_dict)
 
   if FLAGS.csv:
-    HandleCsv(FLAGS.csv, final_score_dict)
+    csv_handler.HandleCsv(FLAGS.csv, final_score_dict)
 
   if FLAGS.remove_all_screenshots:
     DeleteImages(FLAGS.img_dir)
