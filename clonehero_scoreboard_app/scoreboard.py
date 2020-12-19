@@ -40,11 +40,11 @@ def ProcessImages(files):
                0, 0, 0, 0 )
     rgb = img.convert("RGB")
     converted = rgb.convert("RGB", matrix).convert('L')
-    bw = converted.point(lambda x: x > threshold and 255)
+    bw = converted.point(lambda x: x > 25 and 255)
     conv_path = '%s_bw.png' % file_path[:-4]
     bw.save(conv_path)
     score_board = pytesseract.image_to_string(bw)
-    processed_images[file_path] = [score_board]
+    score_dict[file_path] = [score_board]
 
   return score_dict
 
